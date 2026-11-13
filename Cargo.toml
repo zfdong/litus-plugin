@@ -1,0 +1,27 @@
+[package]
+name = "litus-plugin"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "The SDK for Litus plugins: WebAssembly modules that add commands and tools to the Litus desktop GIS"
+license = "MIT OR Apache-2.0"
+authors = ["Tellus Consulting LLC"]
+repository = "https://github.com/zfdong/litus-plugin"
+homepage = "https://litus.tellusai.com/"
+documentation = "https://docs.rs/litus-plugin"
+readme = "README.md"
+keywords = ["litus", "gis", "plugin", "wasm", "geojson"]
+categories = ["wasm", "science::geo", "api-bindings"]
+exclude = ["/.github", "/examples/*/target"]
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+
+[dependencies]
+# Kept small: every plugin compiles these into its module.
+serde_json = "1"
+base64 = "0.23"

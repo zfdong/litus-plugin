@@ -1,0 +1,28 @@
+{
+  "id": "hello-litus",
+  "name": "Hello Litus",
+  "version": "0.1.0",
+  "description": "An example plugin: a command that counts the map's layers and a tool that draws boxes around features.",
+  "author": "Tellus Consulting LLC",
+  "homepage": "https://litus.tellusai.com/",
+  "license": "MIT",
+  "entry": "plugin.wasm",
+  "abi": 1,
+  "minLitusVersion": "0.1.0",
+  "permissions": [],
+  "commands": [
+    { "id": "layer-report", "label": "Layer\nReport", "help": "Counts the map's layers.", "icon": "stats", "params": "{}" }
+  ],
+  "tools": [
+    {
+      "id": "bounding-boxes", "name": "Bounding Boxes", "summary": "A box around each feature, or one around them all.", "toolbox": "Hello",
+      "params": [
+        { "name": "input", "label": "Input features", "kind": "vectorLayer", "required": true },
+        { "name": "whole", "label": "One box for the whole layer", "kind": "bool", "default": false }
+      ]
+    }
+  ],
+  "i18n": {
+    "de": { "Layer\nReport": "Ebenen-\nbericht", "Bounding Boxes": "Begrenzungsrahmen", "{n} layers": "{n} Ebenen", "Boxes": "Rahmen" }
+  }
+}

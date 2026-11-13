@@ -1,0 +1,19 @@
+[package]
+name = "hello-litus"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# A plugin of its own, not part of the Litus workspace.
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+litus-plugin = { path = "../.." }  # in your own plugin: litus-plugin = "0.1"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
