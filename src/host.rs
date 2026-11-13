@@ -70,8 +70,8 @@ pub struct Fetched {
     pub text: String,
     /// The document parsed, when it is a JSON object or array.
     pub json: Option<Value>,
-    /// In the web app, an address not fetched yet: return straight away. Litus undoes the call
-    /// and runs it again once the document has arrived.
+    /// Litus hasn't fetched the address yet and will run the call again once it has: return
+    /// straight away. (The desktop app and `litus-cli` wait for the document instead.)
     pub pending: bool,
 }
 

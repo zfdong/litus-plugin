@@ -10,10 +10,6 @@ the Litus window), load a plugin from its folder while developing it, or install
 registry: Litus's own at `https://litus.tellusai.com/api/plugins/registry.json`, or one an
 organisation hosts for its own plugins (see [Plugin registries](#plugin-registries)).
 
-> **Note.** Litus ships today as the desktop app and `litus-cli` with its `commands` and `run`
-> subcommands. What this guide says of a web app, and of other `litus-cli` subcommands
-> (`plugins`, `run --plugin`, `run --sample`), describes planned parts of Litus.
-
 ## Safety
 
 Plugins run in a sandbox: an interpreter (`wasmi`) with no access to files, the network, the
@@ -175,9 +171,8 @@ The plugin needs the `files` permission:
 
 - The Tools pane shows a path box with a **Browse** button. `extensions` (without the dot; up
   to 16) filters the file picker; leave it out for any file.
-- On the desktop and the command line the value is a path, and Litus reads the file. In the
-  web app, which has no paths, the user picks the file and its contents go with the run. A
-  script can do the same with `{"name": "run.nc", "data": base64}`.
+- The value is a path, and Litus reads the file. A script can also give the contents
+  themselves, as `{"name": "run.nc", "data": base64}`.
 - The tool gets the file in the request's `files`, by parameter name, as
   `{"name": "run.nc", "data": base64}`. The parameter itself holds just the file name.
 - Files are at most 64 MB. The Geoprocessing history keeps the file's name, not its contents.
@@ -191,9 +186,8 @@ save downloads. It also needs the `files` permission:
 { "name": "out_folder", "label": "Output folder", "kind": "folder", "required": true }
 ```
 
-- On the desktop the Tools pane shows a path box with a **Browse** button that opens a folder
-  picker, starting in the folder already given. The web app, which has no paths, shows just the
-  box.
+- The Tools pane shows a path box with a **Browse** button that opens a folder picker,
+  starting in the folder already given.
 - The tool gets the path as text in `params`. Litus doesn't read the folder or check it
   exists: the plugin does, and makes it when it should.
 
@@ -411,12 +405,6 @@ Inside a request, `host::call(op, params)` sends one of these to Litus:
 | `map.addTiles` `{url, kind?, name?, attribution?, maxZoom?, overlay?, replace?, blend?}` | adds a web tile layer (`edit` and `network`) |
 | any command id (`layer.zoomTo`, `select.byAttributes`, `layer.symbology`…) | what the command returns, within the plugin's permissions |
 
-In the web app a command can't wait for a download, so where `layer.addUrl` has to download a
-file whole it answers `{"pending": true, "url": …}` there: Litus downloads the data off the
-frame and adds the layer when it lands, as **Home › Add Data › From URL** does. A PMTiles
-archive, a cloud-optimised GeoTIFF or a FlatGeobuf or GeoParquet read in place is added at once,
-as elsewhere.
-
 `litus-cli commands` lists every command id and its parameters.
 
 #### Fetching a document
@@ -429,10 +417,8 @@ document parsed when it is a JSON object or array.
 - Only `http://` and `https://` addresses on the internet: not this computer, the local network
   or cloud metadata addresses, and no redirect may lead there or from `https` to `http`. Names
   are checked as written and again where they resolve, on every redirect too, so a name that
-  resolves to this computer or the local network is refused on the desktop and the command line
-  (in the web app, the browser decides what it may reach). Requests carry no credentials (an
-  S3 connection's included) and no headers of the plugin's. On the desktop and the command line
-  they never go through a proxy (`HTTPS_PROXY` and the like are ignored), since a proxy would
+  resolves to this computer or the local network is refused. Requests carry no credentials (an
+  S3 connection's included) and no headers of the plugin's. They never go through a proxy (`HTTPS_PROXY` and the like are ignored), since a proxy would
   reach addresses Litus can't check.
 - At most 2 MB, in UTF-8 (a byte-order mark is dropped). An answer that isn't a success (404,
   500…) is an error ending in `HTTP <status>`.
@@ -440,19 +426,10 @@ document parsed when it is a JSON object or array.
   so asking for the same address again costs nothing. Each plugin has answers of its own: one
   never reads what another fetched. Errors are kept for 30 seconds,
   so every command waiting for an address sees its error; after that it is fetched again.
-- On the desktop and the command line the request waits for the answer: at most 20 seconds for
-  one, and 60 seconds for all the fetches of one plugin call. A call makes at most 64 fetches.
-- In the web app nothing may wait. A fetch that isn't kept yet answers
-  `{"pending": true, "url"}` and starts in the background. The command should then return
-  straight away, before doing anything outside the project (writing a file): Litus undoes
-  what the call did to the project (its notices stay, and so does anything done outside it),
-  and runs the command
-  again with the same parameters once every pending answer has landed (up to 8 per call), when
-  `host.fetch` answers from what was kept. A command that walks a chain of documents, each
-  address taken from the one before, runs once per step, up to 64 times. The browser follows
-  redirects itself, and the server must allow requests from web pages (CORS).
+- The request waits for the answer: at most 20 seconds for one, and 60 seconds for all the
+  fetches of one plugin call. A call makes at most 64 fetches.
 
-In the SDK this is `host::fetch(url)`, whose answer has `pending` set in that case.
+In the SDK this is `host::fetch(url)`.
 
 Tools work differently. A tool receives its layer parameters' features as GeoJSON (only the
 selected features when a layer has a selection), and its `file` parameters' files. It returns new layers, standalone tables or a
@@ -505,9 +482,8 @@ or an executable in any language. It can use the file system, threads and any li
 lets existing analysis code (numpy, xarray, GDAL…) become a plugin without a rewrite. It is **not
 sandboxed**: it can do anything you can. The install prompt says so, and the Plugin Manager
 marks it *Not sandboxed*, in **Browse** too, before it is installed (with the Python version
-its environment downloads, if it has one). Process plugins run on the desktop and the command
-line, not in the web app: its **Browse** list shows them as *Desktop and command line only*,
-with no **Install** button.
+its environment downloads, if it has one). Process plugins run in the desktop app and from
+`litus-cli`.
 
 ```json
 {
@@ -637,8 +613,7 @@ to use it, then the instructions in Markdown (the
 plugin has at most 32 skills.
 
 A package of skills alone, with no code, says `"runtime": "skills"`. It has no module, commands,
-tools, tab or permissions. Nothing in it runs, and it installs and works like any other plugin,
-in the desktop app, on the command line and in the web app:
+tools, tab or permissions. Nothing in it runs, and it installs and works like any other plugin:
 
 ```json
 {
