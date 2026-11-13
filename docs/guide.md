@@ -650,5 +650,8 @@ prints each entry with `runtime` filled in (`wasm` when the registry leaves it o
 
 - **Yourself or your team:** give people the `.litusplugin` file, or host a registry of your own
   (above) and have them set its address under **Plugin Manager › Settings**.
-- **Everyone:** plugins in Litus's registry are reviewed before they are listed. To submit one,
-  contact Tellus Consulting through [litus.tellusai.com](https://litus.tellusai.com/).
+- **Everyone:** list it in Litus's registry. Attach the package to a release of your plugin's
+  repository, then open a pull request to
+  [litus-plugin-registry](https://github.com/zfdong/litus-plugin-registry) that adds
+  `registry/<id>.json` with the package's address and SHA-256. Plugins are reviewed before
+  they are listed; that repository's README says how, and what the review looks at.
