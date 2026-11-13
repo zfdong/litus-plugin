@@ -575,23 +575,31 @@ any package themselves:
 
 ```json
 "runtime": "process",
-"python": { "version": "3.12", "requirements": "requirements.txt" },
+"python": { "version": ">=3.12", "requirements": "requirements.txt" },
 "run": ["python", "main.py"]
 ```
 
 - `python` in `run` is then that environment's interpreter, on every platform.
+- `version` is best given as the oldest Python the plugin works with, `">=3.12"` (the default
+  when it's left out). Litus then uses the Python it prefers, the same for every plugin
+  (Python 3.14 in this version), so plugins share one interpreter and one set of downloaded
+  packages. A plugin whose minimum is newer than that gets its minimum. A later Litus may
+  prefer a newer Python: plugins that give a minimum move to it, their environments made again,
+  so keep a plugin working on new Pythons. An exact version (`"3.12"`, any 3.12.x, or
+  `"3.12.4"`) is kept as it is, for a plugin that truly needs one; it costs its users a
+  Python of its own.
 - Litus makes the environment when the plugin is installed: in the background in the desktop
   app (the Plugin Manager shows how it's going, and a **Prepare** button makes it again), and
   before the command returns in `litus-cli plugins install` and `get`.
   `litus-cli plugins prepare <id>` and the `plugin.prepare` command make it on demand.
 - It uses [uv](https://github.com/astral-sh/uv), which Litus downloads once (a pinned version,
   checked against its pinned SHA-256; `LITUS_UV` names one to use instead, which is then
-  trusted as it is, unchecked). uv installs a standalone Python of the version asked for and
+  trusted as it is, unchecked). uv installs a standalone Python of that version and
   the packages in the requirements file, from PyPI. Pythons and uv's cache are shared in
   `tools/` in the plugins folder; each plugin's environment is in `envs/<id>/`. One
   environment is made at a time per plugin, even across the app and `litus-cli`.
-- The environment is made again when the Python version or the requirements change (a plugin
-  update), and removed with the plugin. Until it's ready, the plugin's calls fail with a
+- The environment is made again when its Python version or the requirements change (a plugin
+  update, or a Litus that prefers a newer Python), and removed with the plugin. Until it's ready, the plugin's calls fail with a
   message saying how to prepare it.
 - The first install downloads Python and the packages: tens to hundreds of MB, depending on
   them. The install prompt says so.
@@ -633,8 +641,8 @@ Each plugin's entry in the published `registry.json` comes from its manifest: `i
 `version`, `description`, `author`, `homepage`, `license`, `categories`, `permissions`,
 `minLitusVersion` and `i18n` (its name and description translated), with `package` (an HTTPS
 address, or a path relative to `registry.json`), `sha256` and `size`. A process plugin's entry
-also has `"runtime": "process"` and, when it has a Python environment, `"python": "3.12"` (the
-version); a WebAssembly plugin's has neither, and a skills package's has `"runtime": "skills"`.
+also has `"runtime": "process"` and, when it has a Python environment, `"python": ">=3.12"` (the
+version it asks for); a WebAssembly plugin's has neither, and a skills package's has `"runtime": "skills"`.
 Litus installs a package only if it runs the way its entry says. `litus-cli plugins browse`
 prints each entry with `runtime` filled in (`wasm` when the registry leaves it out).
 
